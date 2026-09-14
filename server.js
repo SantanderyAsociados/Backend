@@ -472,8 +472,15 @@ app.patch("/api/admin/contenido/:tipo/:id", verificarToken, exigirPermiso("conte
     const [rows] = await pool.query("SELECT * FROM contenido WHERE id = ?", [contentId]);
     res.json(rows[0]);
   } catch (error) {
-    console.error("Error actualizando contenido:", error.message);
-    res.status(500).json({ message: "No se pudo actualizar el contenido" });
+    console.error("Error actualizando contenido:", {
+      code: error.code,
+      message: error.message,
+      sqlMessage: error.sqlMessage,
+    });
+    res.status(500).json({
+      message: "No se pudo actualizar el contenido",
+      detail: error.sqlMessage || error.message,
+    });
   }
 });
 
