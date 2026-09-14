@@ -42,6 +42,13 @@ const dbConfig = {
   charset: "utf8mb4",
 };
 
+const esRailway = Boolean(process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_PROJECT_ID);
+if (esRailway && !databaseUrl && !process.env.MYSQLHOST) {
+  throw new Error(
+    "Falta la conexión MySQL en Railway. Crea MYSQL_URL en Backend con el valor ${{MySQL.MYSQL_PRIVATE_URL}}."
+  );
+}
+
 const pool = mysql.createPool(dbConfig);
 
 app.use(
