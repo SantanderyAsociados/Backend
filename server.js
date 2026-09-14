@@ -30,10 +30,10 @@ if (!JWT_SECRET) {
 }
 
 const dbConfig = {
-  host: process.env.DB_HOST || process.env.MYSQLHOST || parsedDatabaseUrl?.hostname || "localhost",
-  port: Number(process.env.DB_PORT || process.env.MYSQLPORT || parsedDatabaseUrl?.port || 3306),
-  user: process.env.DB_USER || process.env.MYSQLUSER || parsedDatabaseUrl?.username || "root",
-  password: process.env.DB_PASSWORD || process.env.MYSQLPASSWORD || parsedDatabaseUrl?.password || "",
+  host: process.env.MYSQLHOST || parsedDatabaseUrl?.hostname || process.env.DB_HOST || "localhost",
+  port: Number(process.env.MYSQLPORT || parsedDatabaseUrl?.port || process.env.DB_PORT || 3306),
+  user: process.env.MYSQLUSER || parsedDatabaseUrl?.username || process.env.DB_USER || "root",
+  password: process.env.MYSQLPASSWORD || parsedDatabaseUrl?.password || process.env.DB_PASSWORD || "",
   database: DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
