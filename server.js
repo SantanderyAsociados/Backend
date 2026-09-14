@@ -14,7 +14,12 @@ const PORT = Number(process.env.PORT || 4000);
 const JWT_SECRET = process.env.JWT_SECRET;
 const ADMIN_USER = process.env.ADMIN_USER || "admin";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "123";
-const DB_NAME = process.env.DB_NAME || process.env.MYSQLDATABASE || "sya";
+const databaseUrl = process.env.MYSQL_URL || process.env.DATABASE_URL;
+const parsedDatabaseUrl = databaseUrl ? new URL(databaseUrl) : null;
+const DB_NAME = process.env.DB_NAME
+  || process.env.MYSQLDATABASE
+  || parsedDatabaseUrl?.pathname.replace(/^\//, "")
+  || "sya";
 const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:5173,https://santanderyasociados.netlify.app")
   .split(",")
   .map((origin) => origin.trim().replace(/\/$/, ""))
@@ -25,10 +30,10 @@ if (!JWT_SECRET) {
 }
 
 const dbConfig = {
-  host: process.env.DB_HOST || process.env.MYSQLHOST || "localhost",
-  port: Number(process.env.DB_PORT || process.env.MYSQLPORT || 3306),
-  user: process.env.DB_USER || process.env.MYSQLUSER || "root",
-  password: process.env.DB_PASSWORD || process.env.MYSQLPASSWORD || "",
+  host: process.env.DB_HOST || process.env.MYSQLHOST || parsedDatabaseUrl?.hostname || "localhost",
+  port: Number(process.env.DB_PORT || process.env.MYSQLPORT || parsedDatabaseUrl?.port || 3306),
+  user: process.env.DB_USER || process.env.MYSQLUSER || parsedDatabaseUrl?.username || "root",
+  password: process.env.DB_PASSWORD || process.env.MYSQLPASSWORD || parsedDatabaseUrl?.password || "",
   database: DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
@@ -55,18 +60,21 @@ app.get("/health", (_req, res) => {
 });
 
 async function inicializarBaseDeDatos() {
-  const adminPool = mysql.createPool({
-    host: dbConfig.host,
-    port: dbConfig.port,
-    user: dbConfig.user,
-    password: dbConfig.password,
-  });
+  const usaMySQLLocal = !databaseUrl && !process.env.MYSQLHOST && dbConfig.host === "localhost";
+  if (usaMySQLLocal) {
+    const adminPool = mysql.createPool({
+      host: dbConfig.host,
+      port: dbConfig.port,
+      user: dbConfig.user,
+      password: dbConfig.password,
+    });
 
-  await adminPool.query(
-    `CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\`
-     CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
-  );
-  await adminPool.end();
+    await adminPool.query(
+      `CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\`
+       CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
+    );
+    await adminPool.end();
+  }
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS admin_users (
@@ -763,6 +771,13 @@ inicializarBaseDeDatos()
     });
   })
   .catch((error) => {
-    console.error("No se pudo iniciar la base de datos:", error.message);
+    console.error("No se pudo iniciar la base de datos:", {
+      code: error.code,
+      message: error.message,
+      sqlMessage: error.sqlMessage,
+      host: dbConfig.host,
+      port: dbConfig.port,
+      database: dbConfig.database,
+    });
     process.exit(1);
   });
