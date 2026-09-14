@@ -1,0 +1,184 @@
+{
+  "hero": {
+    "label": "S&A SANTANDER Y ASOCIADOS SAS",
+    "title": "Ingeniería Estructural basada en",
+    "highlight": "experiencia y confianza.",
+    "description": "Conozca nuestra trayectoria, nuestro equipo y los principios que orientan nuestro trabajo."
+  },
+  "historia": {
+    "label": "NUESTRA HISTORIA",
+    "title": "Más de dos décadas construyendo soluciones de ingeniería",
+    "paragraphs": [
+      "S&A Santander y Asociados S.A.S. es una empresa colombiana de consultoría en ingeniería civil, especializada en diseño estructural, estudios integrales, interventoría y asesoría para proyectos de infraestructura y edificación.",
+      "La empresa fue constituida en el año 2003 por profesionales con una amplia trayectoria en el desarrollo de proyectos de ingeniería.",
+      "La experiencia acumulada por sus socios y profesionales ha permitido participar en proyectos de diferentes escalas y complejidades, manteniendo como prioridad la calidad técnica y el acompañamiento permanente al cliente."
+    ]
+  },
+  "fundador": {
+    "label": "A NUESTRO SOCIO FUNDADOR",
+    "name": "Alfredo Santander",
+    "images": [
+      "/images/PAPA/IMG_8525.jpg",
+      "/images/PAPA/IMG-6573.JPG"
+    ],
+    "paragraphs": [
+      "Alfredo Santander, ingeniero civil graduado de la Universidad Nacional de Colombia con Magister en estructuras de la misma universidad, trabajó en el sector público desde el año 1969 hasta el año de 1977, en el ministerio de obras públicas y transporte, Fondo nacional de Caminos Vecinales, siempre dedicado a estudios y diseños.",
+      "Después de 4 años de trabajar como independiente en el diseño de estructuras, en 1981 se asoció con dos ingenieros para fundar Proyectistas Civiles Asociados (PCA), la cual fue una de las principales compañías de Diseño estructural del país.",
+      "Posteriormente en el año 2003 fundó S&A Santander & Asociados LTDA, junto a sus hijos Luis Fernando y Jorge Alfredo y acompañados por los ingenieros Ivonne Avendaño y Nelson Díaz.",
+      "En su carrera profesional hizo el diseño estructural de cientos de puentes a lo largo y ancho del país en todo tipo de sistemas estructurales. Sirvió como perito en varios procesos y es debido a su gran trayectoria profesional y a los aportes importantes que hizo a la ingeniería del país por lo que le otorgaron varios premios.",
+      "Entre los reconocimientos se destacan el Premio Guillermo González Zuleta (2009) de la Sociedad Colombia de Ingenieros, Premio póstumo “Lámpara de Diógenes” (2019) de la Asociación Colombiana de Ingeniería Sísmica – AIS y Docencia Excelente de la Universidad Nacional de Colombia – Sede Bogotá.",
+      "Hoy en día seguimos su legado y continuamos trabajando con la misma pasión, dedicación y ética que nuestro socio fundador nos inculcó y así nos aseguraremos de darle bases sólidas a sus proyectos."
+    ]
+  },
+  "proposito": {
+    "label": "NUESTRO PROPÓSITO",
+    "title": "Dar bases sólidas a sus proyectos",
+    "values": [
+      {
+        "title": "CALIDAD",
+        "description": "Desarrollamos nuestros proyectos con criterios técnicos y altos estándares de calidad."
+      },
+      {
+        "title": "EXPERIENCIA",
+        "description": "Contamos con profesionales especializados y una amplia trayectoria en ingeniería."
+      },
+      {
+        "title": "CONFIANZA",
+        "description": "Acompañamos a nuestros clientes durante las diferentes etapas de sus proyectos."
+      },
+      {
+        "title": "SOLUCIONES",
+        "description": "Buscamos soluciones técnicas eficientes, seguras y acordes con cada proyecto."
+      }
+    ]
+  },
+  "mision": {
+    "title": "Nuestra misión",
+    "description": "Prestar servicios de consultoría e interventoría en ingeniería civil y arquitectura, especialmente en diseño estructural, estudios integrales y asesoría técnica, buscando la calidad, el cumplimiento de los compromisos y la satisfacción de nuestros clientes."
+  },
+  "vision": {
+    "title": "Nuestra visión",
+    "description": "Ser reconocidos como una empresa líder por la alta calidad de sus servicios de consultoría e interventoría en ingeniería civil y arquitectura, participando en proyectos públicos y privados de diferentes sectores."
+  },
+  "equipo": {
+    "label": "EQUIPO S&A",
+    "title": "Profesionales al servicio de cada proyecto",
+    "items": [
+      {
+        "nombre": "Jorge Alfredo Santander Moya",
+        "cargo": "Gerente General",
+        "foto": "/equipo/jorge.jpg"
+      },
+      {
+        "nombre": "Jose Nelson Diaz Cardenas",
+        "cargo": "Director de Proyectos",
+        "foto": "/equipo/jose.jpg"
+      },
+      {
+        "nombre": "Luis Fernando Santander Moya",
+        "cargo": "Director de Proyectos",
+        "foto": "/equipo/luis.jpg"
+      },
+      {
+        "nombre": "Lizeth Andrea Bautista",
+        "cargo": "Directora Administrativa",
+        "foto": "/equipo/lizeth.jpg"
+      },
+      {
+        "nombre": "Braham Nicolas Mirque Rodriguez",
+        "cargo": "Coordinador BIM",
+        "foto": "/equipo/braham.jpg"
+      },
+      {
+        "nombre": "Paulo Cesar Rebolledo Palacios",
+        "cargo": "Ingeniero de Diseño",
+        "foto": "/equipo/paulo.jpg"
+      },
+      {
+        "nombre": "Luisa Maria Chala Madrigal",
+        "cargo": "Secretaria",
+        "foto": "/equipo/luisa.jpg"
+      },
+      {
+        "nombre": "Jenny Esperanza Ortiz",
+        "cargo": "Asesor Externo SST",
+        "foto": "/equipo/jenny.jpg"
+      },
+      {
+        "nombre": "Lina Maria Parga Hernandez",
+        "cargo": "Ingeniera de Diseño",
+        "foto": "/equipo/lina.jpg"
+      },
+      {
+        "nombre": "Jhon Anderson Lesmes",
+        "cargo": "Dibujante",
+        "foto": "/equipo/jhon.jpg"
+      },
+      {
+        "nombre": "Jarrison Favian Vaquen Lozano",
+        "cargo": "Dibujante",
+        "foto": "/equipo/jarrison.jpg"
+      },
+      {
+        "nombre": "Edgar Nicolas Fuentes Alfonso",
+        "cargo": "Ingeniero de Diseño",
+        "foto": "/equipo/edgar.jpg"
+      },
+      {
+        "nombre": "Edwin Leonardo Gonzalez Rojas",
+        "cargo": "Dibujante",
+        "foto": "/equipo/edwin.jpg"
+      },
+      {
+        "nombre": "Dayana Patricia Molina Tilano",
+        "cargo": "Ingeniera de Diseño",
+        "foto": "/equipo/dayana.jpg"
+      },
+      {
+        "nombre": "Dolly Lizeth Fonseca Peña",
+        "cargo": "Auxiliar Varios",
+        "foto": "/equipo/dolly.jpg"
+      },
+      {
+        "nombre": "Daniel Alejandro Molano Huertas",
+        "cargo": "Ingeniero de Diseño",
+        "foto": "/equipo/daniel.jpg"
+      },
+      {
+        "nombre": "Brandon Felipe Morales Herrera",
+        "cargo": "Aprendiz SENA",
+        "foto": "/equipo/brandon.jpg"
+      }
+    ]
+  },
+  "clientes": {
+    "label": "NUESTROS CLIENTES",
+    "title": "Empresas que confían en nosotros",
+    "intro": "Hemos tenido la oportunidad de trabajar junto a diferentes empresas y organizaciones en el desarrollo de proyectos de ingeniería.",
+    "items": [
+      "/images/LOGOS CLIENTES/ARQUIURBANA.png",
+      "/images/LOGOS CLIENTES/calymayor.png",
+      "/images/LOGOS CLIENTES/cass.jpg",
+      "/images/LOGOS CLIENTES/COLPATRIA.png",
+      "/images/LOGOS CLIENTES/concay.png",
+      "/images/LOGOS CLIENTES/conconcreto.jpg",
+      "/images/LOGOS CLIENTES/ENTORNO.jpg",
+      "/images/LOGOS CLIENTES/gisaico.png",
+      "/images/LOGOS CLIENTES/gradeco.png",
+      "/images/LOGOS CLIENTES/hace ingenieros.png",
+      "/images/LOGOS CLIENTES/KMA.png",
+      "/images/LOGOS CLIENTES/latinco.jpg",
+      "/images/LOGOS CLIENTES/NORDESTE.png",
+      "/images/LOGOS CLIENTES/oxy.png",
+      "/images/LOGOS CLIENTES/planificadas.png",
+      "/images/LOGOS CLIENTES/PACIFICO 3.png",
+      "/images/LOGOS CLIENTES/prourbanos.jpg",
+      "/images/LOGOS CLIENTES/ruta40.jpg",
+      "/images/LOGOS CLIENTES/sesac.png",
+      "/images/LOGOS CLIENTES/SISGA.jpg",
+      "/images/LOGOS CLIENTES/sonacol.jpg",
+      "/images/LOGOS CLIENTES/tecnoconsulta.jpg",
+      "/images/LOGOS CLIENTES/URBANSA.jpg"
+    ]
+  }
+}

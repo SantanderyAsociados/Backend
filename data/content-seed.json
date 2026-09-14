@@ -1,0 +1,364 @@
+[
+  {
+    "tipo": "proyectos",
+    "titulo": "Intersección a tres niveles Neomundo",
+    "categoria": "Infraestructura",
+    "ubicacion": "Bucaramanga",
+    "descripcion": "Proyecto de infraestructura vial desarrollado por S&A.",
+    "imagen": "/images/Fotos/IMG_20190626_120741352_HDR.jpg",
+    "slug": "interseccion-a-tres-niveles-neomundo",
+    "estado": "Publicado"
+  },
+  {
+    "tipo": "proyectos",
+    "titulo": "Intersección a tres niveles Monumento al Campesino",
+    "categoria": "Infraestructura",
+    "ubicacion": "Pasto",
+    "descripcion": "Proyecto de infraestructura vial desarrollado por S&A.",
+    "imagen": "/images/Fotos/IMG_20190626_120642731_HDR.jpg",
+    "slug": "interseccion-a-tres-niveles-monumento-al-campesino",
+    "estado": "Publicado"
+  },
+  {
+    "tipo": "proyectos",
+    "titulo": "Interconector glorieta Calle 6 con Carrera 10",
+    "categoria": "Infraestructura",
+    "ubicacion": "Bogotá",
+    "descripcion": "Proyecto de infraestructura vial desarrollado por S&A.",
+    "imagen": "/images/Fotos/IMG_20190626_113903953_HDR.jpg",
+    "slug": "interconector-glorieta-calle-6-carrera-10",
+    "estado": "Publicado"
+  },
+  {
+    "tipo": "proyectos",
+    "titulo": "Puente El Embalse del Sisga",
+    "categoria": "Puentes",
+    "ubicacion": "Briceño - Tunja - Sogamoso",
+    "descripcion": "Proyecto de puente desarrollado por S&A.",
+    "imagen": "/images/Fotos/Puentes/Puente Sisga - BTS.jfif",
+    "slug": "puente-el-embalse-del-sisga",
+    "estado": "Publicado"
+  },
+  {
+    "tipo": "proyectos",
+    "titulo": "Puente Carmelo Torres Tovar",
+    "categoria": "Puentes",
+    "ubicacion": "Banco, Magdalena - Tamalameque, Cesar",
+    "descripcion": "Proyecto de puente desarrollado por S&A.",
+    "imagen": "/images/Fotos/Puentes/PTE CARMELO TORRES.png",
+    "slug": "puente-carmelo-torres-tovar",
+    "estado": "Publicado"
+  },
+  {
+    "tipo": "proyectos",
+    "titulo": "Gran Plaza Soacha",
+    "categoria": "Edificaciones",
+    "ubicacion": "Soacha",
+    "descripcion": "Proyecto de edificación desarrollado por S&A.",
+    "imagen": "/images/Fotos/Comercio/CC Gran plaza Soacha Consorcio Conconcreto y Carlos Collins.jpeg",
+    "slug": "gran-plaza-soacha",
+    "estado": "Publicado"
+  },
+  {
+    "tipo": "proyectos",
+    "titulo": "Altos de San Antonio",
+    "categoria": "Edificaciones",
+    "ubicacion": "Bogotá",
+    "descripcion": "Proyecto de edificación desarrollado por S&A.",
+    "imagen": "/images/Fotos/Vivienda/Mirador de Cervantes  Cra 9na Calle 84 - Construtecnia.jfif",
+    "slug": "altos-de-san-antonio",
+    "estado": "Publicado"
+  },
+  {
+    "tipo": "proyectos",
+    "titulo": "Balcones de San Carlos",
+    "categoria": "Edificaciones",
+    "ubicacion": "Bogotá",
+    "descripcion": "Proyecto de edificación desarrollado por S&A.",
+    "imagen": "/images/Fotos/Vivienda/Allure Cartagena - KMA.jfif",
+    "slug": "balcones-de-san-carlos",
+    "estado": "Publicado"
+  },
+  {
+    "tipo": "proyectos",
+    "titulo": "Estación Intermedia Banderas",
+    "categoria": "Transporte",
+    "ubicacion": "TransMilenio",
+    "descripcion": "Proyecto de transporte público desarrollado por S&A.",
+    "imagen": "/images/Fotos/Institucionales/Estación grupo 9 Av 68 - Transmilenio.jpeg",
+    "slug": "estacion-intermedia-banderas",
+    "estado": "Publicado"
+  },
+  {
+    "tipo": "proyectos",
+    "titulo": "Estación Cabecera Américas",
+    "categoria": "Transporte",
+    "ubicacion": "TransMilenio",
+    "descripcion": "Proyecto de transporte público desarrollado por S&A.",
+    "imagen": "/images/Fotos/Institucionales/Estación Cabecera Américas - Transmilenio.png",
+    "slug": "estacion-cabecera-americas",
+    "estado": "Publicado"
+  },
+  {
+    "tipo": "proyectos",
+    "titulo": "Estación TransMilenio Carrera 10",
+    "categoria": "Transporte",
+    "ubicacion": "Bogotá",
+    "descripcion": "Proyecto de transporte público desarrollado por S&A.",
+    "imagen": "/images/Fotos/Institucionales/Estación cra 10 - Transmilenio.jpg",
+    "slug": "estacion-transmilenio-carrera-10",
+    "estado": "Publicado"
+  },
+  {
+    "tipo": "proyectos",
+    "titulo": "Aeropuerto Gustavo Rojas Pinilla",
+    "categoria": "Edificaciones",
+    "ubicacion": "San Andrés",
+    "descripcion": "Proyecto aeroportuario desarrollado por S&A.",
+    "imagen": "/images/Fotos/IMG-20190703-WA0077.jpg",
+    "slug": "aeropuerto-gustavo-rojas-pinilla",
+    "estado": "Publicado"
+  },
+  {
+    "tipo": "proyectos",
+    "titulo": "Planta de Cemento San Marcos",
+    "categoria": "Industrial",
+    "ubicacion": "Colombia",
+    "descripcion": "Proyecto industrial desarrollado por S&A.",
+    "imagen": "/images/Fotos/Industrial/Bodegas Puerto Central - Prodesa.jfif",
+    "slug": "planta-de-cemento-san-marcos",
+    "estado": "Publicado"
+  },
+  {
+    "tipo": "servicios",
+    "titulo": "Diseño estructural de intersecciones viales",
+    "descripcion": "Diseño estructural de intersecciones viales en ciudad utilizando diversos sistemas estructurales de concreto o metálicos.",
+    "slug": "diseno-estructural-de-intersecciones-viales",
+    "estado": "Publicado",
+    "orden": 1
+  },
+  {
+    "tipo": "servicios",
+    "titulo": "Diseño estructural de puentes",
+    "descripcion": "Diseño estructural de puentes nuevos para vías nacionales o municipales en concreto o estructuras metálicas.",
+    "slug": "diseno-estructural-de-puentes",
+    "estado": "Publicado",
+    "orden": 2
+  },
+  {
+    "tipo": "servicios",
+    "titulo": "Diseño estructural de edificaciones",
+    "descripcion": "Diseño estructural de edificaciones desarrolladas en sistemas de concreto o estructuras metálicas.",
+    "slug": "diseno-estructural-de-edificaciones",
+    "estado": "Publicado",
+    "orden": 3
+  },
+  {
+    "tipo": "servicios",
+    "titulo": "Estructuras para transporte público",
+    "descripcion": "Diseño de estructuras destinadas a sistemas de transporte público y sus diferentes componentes.",
+    "slug": "estructuras-para-transporte-publico",
+    "estado": "Publicado",
+    "orden": 4
+  },
+  {
+    "tipo": "servicios",
+    "titulo": "Inspección de puentes",
+    "descripcion": "Inspección y evaluación de puentes construidos en concreto y estructuras metálicas.",
+    "slug": "inspeccion-de-puentes",
+    "estado": "Publicado",
+    "orden": 5
+  },
+  {
+    "tipo": "servicios",
+    "titulo": "Vulnerabilidad y reforzamiento de puentes",
+    "descripcion": "Análisis de vulnerabilidad sísmica, reforzamiento y ampliación de puentes.",
+    "slug": "vulnerabilidad-y-reforzamiento-de-puentes",
+    "estado": "Publicado",
+    "orden": 6
+  },
+  {
+    "tipo": "servicios",
+    "titulo": "Puentes peatonales",
+    "descripcion": "Diseño de puentes peatonales en estructura metálica y concreto.",
+    "slug": "puentes-peatonales",
+    "estado": "Publicado",
+    "orden": 7
+  },
+  {
+    "tipo": "servicios",
+    "titulo": "Vulnerabilidad de edificaciones",
+    "descripcion": "Análisis de vulnerabilidad sísmica y diseño de soluciones de reforzamiento para edificaciones.",
+    "slug": "vulnerabilidad-de-edificaciones",
+    "estado": "Publicado",
+    "orden": 8
+  },
+  {
+    "tipo": "servicios",
+    "titulo": "Edificaciones industriales",
+    "descripcion": "Diseño estructural de edificaciones destinadas a actividades industriales.",
+    "slug": "edificaciones-industriales",
+    "estado": "Publicado",
+    "orden": 9
+  },
+  {
+    "tipo": "servicios",
+    "titulo": "Interventoría de obra",
+    "descripcion": "Acompañamiento, seguimiento y control técnico durante la ejecución de proyectos.",
+    "slug": "interventoria-de-obra",
+    "estado": "Publicado",
+    "orden": 10
+  },
+  {
+    "tipo": "servicios",
+    "titulo": "Estudios integrales",
+    "descripcion": "Desarrollo y coordinación de estudios estructurales, viales, arquitectónicos, hidráulicos y eléctricos.",
+    "slug": "estudios-integrales",
+    "estado": "Publicado",
+    "orden": 11
+  },
+  {
+    "tipo": "noticias",
+    "titulo": "S&A participa en ENEXPRO AEC y ExpoEdifica en Santiago de Chile",
+    "categoria": "Internacionalización",
+    "resumen": "S&A fue invitada por PROCHILE a participar en ENEXPRO AEC en Santiago, generando espacios de networking con empresas chilenas del sector de la ingeniería y la construcción.",
+    "descripcion": "S&A fue invitada por PROCHILE a participar en ENEXPRO AEC en Santiago, generando espacios de networking con empresas chilenas del sector de la ingeniería y la construcción.",
+    "imagen": "/images/Fotos/IMG-20190703-WA0012.jpg",
+    "slug": "sya-participa-en-enexpro-aec-y-expoedifica",
+    "autor": "Equipo S&A",
+    "fecha": "2019-07-03",
+    "estado": "Publicado"
+  },
+  {
+    "tipo": "noticias",
+    "titulo": "Visita a la Cámara Chilena de la Construcción",
+    "categoria": "Innovación",
+    "resumen": "Durante la visita se conocieron experiencias y soluciones relacionadas con el comportamiento estructural y tecnologías como los amortiguadores de masa sintonizada.",
+    "descripcion": "Durante la visita se conocieron experiencias y soluciones relacionadas con el comportamiento estructural y tecnologías como los amortiguadores de masa sintonizada.",
+    "imagen": "/images/Fotos/IMG-20190703-WA0024.jpg",
+    "slug": "visita-a-la-camara-chilena-de-la-construccion",
+    "autor": "Equipo S&A",
+    "fecha": "2019-07-03",
+    "estado": "Publicado"
+  },
+  {
+    "tipo": "noticias",
+    "titulo": "S&A participa en las soluciones de infraestructura de El Edén",
+    "categoria": "Proyectos",
+    "resumen": "Para el proyecto El Edén en Bogotá, S&A participó en el diseño de infraestructura vial de acceso, vías deprimidas, box culvert, puentes y muros de contención.",
+    "descripcion": "Para el proyecto El Edén en Bogotá, S&A participó en el diseño de infraestructura vial de acceso, vías deprimidas, box culvert, puentes y muros de contención.",
+    "imagen": "/images/Fotos/Puentes/PTE GUAYURIBA - META.png",
+    "slug": "sya-participa-en-las-soluciones-de-infraestructura-de-el-eden",
+    "autor": "Equipo S&A",
+    "fecha": "2019-07-03",
+    "estado": "Publicado"
+  },
+  {
+    "tipo": "experiencia",
+    "titulo": "Registro de obra de S&A",
+    "descripcion": "Registro de obra de S&A",
+    "imagen": "/images/Fotos/IMG-20190703-WA0076.jpg",
+    "slug": "registro-de-obra-sya",
+    "estado": "Publicado",
+    "orden": 1
+  },
+  {
+    "tipo": "experiencia",
+    "titulo": "Visita técnica de S&A",
+    "descripcion": "Visita técnica de S&A",
+    "imagen": "/images/Fotos/IMG-20190628-WA0014.jpg",
+    "slug": "visita-tecnica-sya",
+    "estado": "Publicado",
+    "orden": 2
+  },
+  {
+    "tipo": "experiencia",
+    "titulo": "Estructura en proceso de construcción",
+    "descripcion": "Estructura en proceso de construcción",
+    "imagen": "/images/Fotos/IMG-20190628-WA0012.jpg",
+    "slug": "estructura-en-proceso-de-construccion",
+    "estado": "Publicado",
+    "orden": 3
+  },
+  {
+    "tipo": "experiencia",
+    "titulo": "Inspección de estructura",
+    "descripcion": "Inspección de estructura",
+    "imagen": "/images/Fotos/IMG-20190628-WA0010.jpg",
+    "slug": "inspeccion-de-estructura",
+    "estado": "Publicado",
+    "orden": 4
+  },
+  {
+    "tipo": "experiencia",
+    "titulo": "Proyecto de infraestructura",
+    "descripcion": "Proyecto de infraestructura",
+    "imagen": "/images/Fotos/IMG_20190627_113725721.jpg",
+    "slug": "proyecto-de-infraestructura",
+    "estado": "Publicado",
+    "orden": 5
+  },
+  {
+    "tipo": "experiencia",
+    "titulo": "Detalle de obra de ingeniería",
+    "descripcion": "Detalle de obra de ingeniería",
+    "imagen": "/images/Fotos/IMG_20190627_095936708_HDR.jpg",
+    "slug": "detalle-de-obra-de-ingenieria",
+    "estado": "Publicado",
+    "orden": 6
+  },
+  {
+    "tipo": "experiencia",
+    "titulo": "Trabajo de campo de S&A",
+    "descripcion": "Trabajo de campo de S&A",
+    "imagen": "/images/Fotos/IMG_20190627_095838609_HDR.jpg",
+    "slug": "trabajo-de-campo-sya",
+    "estado": "Publicado",
+    "orden": 7
+  },
+  {
+    "tipo": "experiencia",
+    "titulo": "Estructura de proyecto civil",
+    "descripcion": "Estructura de proyecto civil",
+    "imagen": "/images/Fotos/IMG_20190626_125939610.jpg",
+    "slug": "estructura-de-proyecto-civil",
+    "estado": "Publicado",
+    "orden": 8
+  },
+  {
+    "tipo": "experiencia",
+    "titulo": "Avance de proyecto de ingeniería",
+    "descripcion": "Avance de proyecto de ingeniería",
+    "imagen": "/images/Fotos/IMG_20190626_125744907.jpg",
+    "slug": "avance-de-proyecto-de-ingenieria",
+    "estado": "Publicado",
+    "orden": 9
+  },
+  {
+    "tipo": "experiencia",
+    "titulo": "Obra visitada por el equipo S&A",
+    "descripcion": "Obra visitada por el equipo S&A",
+    "imagen": "/images/Fotos/IMG_20190629_131124430.jpg",
+    "slug": "obra-visitada-por-el-equipo-sya",
+    "estado": "Publicado",
+    "orden": 10
+  },
+  {
+    "tipo": "experiencia",
+    "titulo": "Supervisión técnica en obra",
+    "descripcion": "Supervisión técnica en obra",
+    "imagen": "/images/Fotos/IMG_20190628_104625009.jpg",
+    "slug": "supervision-tecnica-en-obra",
+    "estado": "Publicado",
+    "orden": 11
+  },
+  {
+    "tipo": "experiencia",
+    "titulo": "Solución estructural en obra",
+    "descripcion": "Solución estructural en obra",
+    "imagen": "/images/Fotos/IMG_20190627_113729372.jpg",
+    "slug": "solucion-estructural-en-obra",
+    "estado": "Publicado",
+    "orden": 12
+  }
+]
