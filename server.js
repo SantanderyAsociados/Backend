@@ -14,10 +14,10 @@ const PORT = Number(process.env.PORT || 4000);
 const JWT_SECRET = process.env.JWT_SECRET;
 const ADMIN_USER = process.env.ADMIN_USER || "admin";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "123";
-const DB_NAME = process.env.DB_NAME || "sya";
-const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:5173")
+const DB_NAME = process.env.DB_NAME || process.env.MYSQLDATABASE || "sya";
+const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:5173,https://santanderyasociados.netlify.app")
   .split(",")
-  .map((origin) => origin.trim())
+  .map((origin) => origin.trim().replace(/\/$/, ""))
   .filter(Boolean);
 
 if (!JWT_SECRET) {
@@ -25,10 +25,10 @@ if (!JWT_SECRET) {
 }
 
 const dbConfig = {
-  host: process.env.DB_HOST || "localhost",
-  port: Number(process.env.DB_PORT || 3306),
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "",
+  host: process.env.DB_HOST || process.env.MYSQLHOST || "localhost",
+  port: Number(process.env.DB_PORT || process.env.MYSQLPORT || 3306),
+  user: process.env.DB_USER || process.env.MYSQLUSER || "root",
+  password: process.env.DB_PASSWORD || process.env.MYSQLPASSWORD || "",
   database: DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
