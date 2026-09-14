@@ -62,7 +62,7 @@ app.use(
     },
   })
 );
-app.use(express.json({ limit: "8mb" }));
+app.use(express.json({ limit: "50mb" }));
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
@@ -339,6 +339,11 @@ function normalizarContenido(body = {}) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
+  const fechaPublicacion = body.fecha || body.fecha_publicacion || null;
+  const fechaValida = fechaPublicacion && /^\d{4}-\d{2}-\d{2}$/.test(String(fechaPublicacion))
+    ? String(fechaPublicacion)
+    : null;
+
   return {
     titulo,
     subtitulo: String(body.subtitulo || "").trim(),
@@ -349,7 +354,7 @@ function normalizarContenido(body = {}) {
     imagen: String(body.imagen || "").trim(),
     slug: slugBase || `contenido-${Date.now()}`,
     autor: String(body.autor || "").trim(),
-    fecha_publicacion: body.fecha || body.fecha_publicacion || null,
+    fecha_publicacion: fechaValida,
     estado: String(body.estado || "Borrador").trim(),
     orden: Number(body.orden || 0),
   };
@@ -477,10 +482,10 @@ app.patch("/api/admin/contenido/:tipo/:id", verificarToken, exigirPermiso("conte
       message: error.message,
       sqlMessage: error.sqlMessage,
     });
-    res.status(500).json({
-      message: "No se pudo actualizar el contenido",
-      detail: error.sqlMessage || error.message,
-    });
+    if (error.code === "ER_DUP_ENTRY") {
+      return res.status(409).json({ message: "Ya existe contenido con ese slug" });
+    }
+    res.status(500).json({ message: "No se pudo actualizar el contenido" });
   }
 });
 
