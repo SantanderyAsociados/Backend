@@ -17,6 +17,14 @@ test("calcula jornada normal descontando una hora de almuerzo", () => {
   assert.equal(registro.tiempo_estimado, 8.5);
 });
 
+test("usa jornada normal cuando no se envía el tipo", () => {
+  const registroSinTipo = { ...registroBase };
+  delete registroSinTipo.tipo;
+  const registro = prepararRegistroHoras(registroSinTipo);
+  assert.equal(registro.tipo, "normal");
+  assert.equal(registro.tiempo_estimado, 8.5);
+});
+
 test("calcula vacaciones como nueve horas en día hábil", () => {
   const registro = prepararRegistroHoras({ fecha: "2026-06-01", tipo: "vacaciones" });
   assert.equal(registro.tiempo_estimado, 9);
