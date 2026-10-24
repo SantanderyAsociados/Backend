@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS admin_users (
   username VARCHAR(80) NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   role VARCHAR(30) NOT NULL DEFAULT 'admin',
+  monthly_salary DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   UNIQUE KEY admin_users_username_unique (username)
@@ -21,6 +22,7 @@ CREATE TABLE IF NOT EXISTS registros_horas (
   hora_salida TIME NOT NULL,
   cliente VARCHAR(180) NOT NULL,
   proyecto VARCHAR(180) NOT NULL,
+  tiempo_estimado DECIMAL(6, 2) NOT NULL DEFAULT 0.00,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   KEY registros_horas_usuario_fecha_index (user_id, fecha),

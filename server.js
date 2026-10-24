@@ -91,6 +91,7 @@ async function inicializarBaseDeDatos() {
       username VARCHAR(80) NOT NULL,
       password_hash VARCHAR(255) NOT NULL,
       role VARCHAR(30) NOT NULL DEFAULT 'admin',
+      monthly_salary DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (id),
       UNIQUE KEY admin_users_username_unique (username)
@@ -107,12 +108,29 @@ async function inicializarBaseDeDatos() {
       hora_salida TIME NOT NULL,
       cliente VARCHAR(180) NOT NULL,
       proyecto VARCHAR(180) NOT NULL,
+      tiempo_estimado DECIMAL(6, 2) NOT NULL DEFAULT 0.00,
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (id),
       KEY registros_horas_usuario_fecha_index (user_id, fecha),
       KEY registros_horas_fecha_index (fecha)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
+
+  const columnasNuevas = [
+    ["admin_users", "monthly_salary", "DECIMAL(12, 2) NOT NULL DEFAULT 0.00"],
+    ["registros_horas", "tiempo_estimado", "DECIMAL(6, 2) NOT NULL DEFAULT 0.00"],
+  ];
+  for (const [tabla, columna, definicion] of columnasNuevas) {
+    const [columnas] = await pool.query(
+      `SELECT COUNT(*) AS cantidad
+       FROM INFORMATION_SCHEMA.COLUMNS
+       WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?`,
+      [DB_NAME, tabla, columna]
+    );
+    if (!Number(columnas[0].cantidad)) {
+      await pool.query(`ALTER TABLE \`${tabla}\` ADD COLUMN \`${columna}\` ${definicion}`);
+    }
+  }
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS mensajes (
@@ -417,7 +435,7 @@ app.get("/api/contenido/:tipo", validarTipoContenido, async (req, res) => {
 const PERMISOS_POR_ROL = {
   admin: ["contenido:leer", "contenido:crear", "contenido:editar", "contenido:publicar", "contenido:eliminar", "mensajes:leer", "mensajes:gestionar", "usuarios:gestionar", "horas:leer", "horas:crear"],
   Administrador: ["contenido:leer", "contenido:crear", "contenido:editar", "contenido:publicar", "contenido:eliminar", "mensajes:leer", "mensajes:gestionar", "usuarios:gestionar", "horas:leer", "horas:crear"],
-  Editor: ["horas:leer", "horas:crear"],
+  Editor: ["horas:crear"],
   Autor: ["contenido:leer", "contenido:crear", "contenido:editar", "mensajes:leer"],
   Colaborador: ["contenido:leer", "contenido:crear", "mensajes:leer"],
   Suscriptor: ["contenido:leer"],
@@ -577,17 +595,32 @@ function esAdministrador(req) {
   return req.admin?.role === "admin" || req.admin?.role === "Administrador";
 }
 
+function esFechaIsoValida(fecha) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return false;
+  const fechaUtc = new Date(`${fecha}T00:00:00Z`);
+  return Number.isFinite(fechaUtc.getTime()) && fechaUtc.toISOString().slice(0, 10) === fecha;
+}
+
 app.get("/api/admin/registros-horas", verificarToken, exigirPermiso("horas:leer"), async (req, res) => {
+  if (req.query.fecha !== undefined && typeof req.query.fecha !== "string") {
+    return res.status(400).json({ message: "La fecha de consulta no es válida" });
+  }
+  const fecha = typeof req.query.fecha === "string" ? req.query.fecha.trim() : "";
+  const fechaValida = !fecha || esFechaIsoValida(fecha);
+  if (!fechaValida) {
+    return res.status(400).json({ message: "La fecha de consulta no es válida" });
+  }
+
   try {
     const [rows] = await pool.query(
       `SELECT id, user_id, username, DATE_FORMAT(fecha, '%Y-%m-%d') AS fecha,
               TIME_FORMAT(hora_entrada, '%H:%i') AS hora_entrada,
               TIME_FORMAT(hora_salida, '%H:%i') AS hora_salida,
-              cliente, proyecto, created_at
+              cliente, proyecto, tiempo_estimado, created_at
        FROM registros_horas
-       ${esAdministrador(req) ? "" : "WHERE user_id = ?"}
+       WHERE (? IS NULL OR fecha = ?)
        ORDER BY fecha DESC, hora_entrada DESC, id DESC`,
-      esAdministrador(req) ? [] : [Number(req.admin.sub)]
+      [fecha || null, fecha || null]
     );
     res.json(rows);
   } catch (error) {
@@ -603,6 +636,7 @@ app.post("/api/admin/registros-horas", verificarToken, exigirPermiso("horas:crea
   const horaSalida = typeof body.hora_salida === "string" ? body.hora_salida.trim() : "";
   const cliente = typeof body.cliente === "string" ? body.cliente.trim() : "";
   const proyecto = typeof body.proyecto === "string" ? body.proyecto.trim() : "";
+  const tiempoEstimado = Number(body.tiempo_estimado);
   const fechaPartes = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fecha);
   const fechaValida = fechaPartes
     && new Date(Date.UTC(Number(fechaPartes[1]), Number(fechaPartes[2]) - 1, Number(fechaPartes[3])))
@@ -621,17 +655,20 @@ app.post("/api/admin/registros-horas", verificarToken, exigirPermiso("horas:crea
     || cliente.length > 180
     || !proyecto
     || proyecto.length > 180
+    || !Number.isFinite(tiempoEstimado)
+    || tiempoEstimado <= 0
+    || tiempoEstimado > 24
   ) {
     return res.status(400).json({
-      message: "Indica una fecha válida, horas correctas (la salida posterior a la entrada), cliente y proyecto.",
+      message: "Indica fecha, horas, cliente, proyecto y un tiempo estimado entre 0 y 24 horas.",
     });
   }
 
   try {
     const [result] = await pool.query(
       `INSERT INTO registros_horas
-       (user_id, username, fecha, hora_entrada, hora_salida, cliente, proyecto)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+       (user_id, username, fecha, hora_entrada, hora_salida, cliente, proyecto, tiempo_estimado)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         Number(req.admin.sub),
         String(req.admin.username),
@@ -640,6 +677,7 @@ app.post("/api/admin/registros-horas", verificarToken, exigirPermiso("horas:crea
         horaSalida,
         cliente,
         proyecto,
+        tiempoEstimado,
       ]
     );
     res.status(201).json({
@@ -651,6 +689,7 @@ app.post("/api/admin/registros-horas", verificarToken, exigirPermiso("horas:crea
       hora_salida: horaSalida,
       cliente,
       proyecto,
+      tiempo_estimado: tiempoEstimado,
     });
   } catch (error) {
     console.error("Error guardando registro de horas:", error.message);
@@ -658,10 +697,83 @@ app.post("/api/admin/registros-horas", verificarToken, exigirPermiso("horas:crea
   }
 });
 
+app.patch("/api/admin/registros-horas/:id", verificarToken, exigirAdministrador, async (req, res) => {
+  const recordId = Number(req.params.id);
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const fecha = typeof body.fecha === "string" ? body.fecha.trim() : "";
+  const horaEntrada = typeof body.hora_entrada === "string" ? body.hora_entrada.trim() : "";
+  const horaSalida = typeof body.hora_salida === "string" ? body.hora_salida.trim() : "";
+  const cliente = typeof body.cliente === "string" ? body.cliente.trim() : "";
+  const proyecto = typeof body.proyecto === "string" ? body.proyecto.trim() : "";
+  const tiempoEstimado = Number(body.tiempo_estimado);
+  const fechaValida = esFechaIsoValida(fecha);
+  const horaValida = (hora) => /^([01]\d|2[0-3]):[0-5]\d$/.test(hora);
+
+  if (
+    !Number.isSafeInteger(recordId)
+    || recordId <= 0
+    || !fechaValida
+    || !horaValida(horaEntrada)
+    || !horaValida(horaSalida)
+    || horaSalida <= horaEntrada
+    || !cliente
+    || cliente.length > 180
+    || !proyecto
+    || proyecto.length > 180
+    || !Number.isFinite(tiempoEstimado)
+    || tiempoEstimado <= 0
+    || tiempoEstimado > 24
+  ) {
+    return res.status(400).json({ message: "Los datos del registro de horas no son válidos" });
+  }
+
+  try {
+    await pool.query(
+      `UPDATE registros_horas
+       SET fecha = ?, hora_entrada = ?, hora_salida = ?, cliente = ?, proyecto = ?, tiempo_estimado = ?
+       WHERE id = ?`,
+      [fecha, horaEntrada, horaSalida, cliente, proyecto, tiempoEstimado, recordId]
+    );
+    const [rows] = await pool.query(
+      `SELECT id, user_id, username, DATE_FORMAT(fecha, '%Y-%m-%d') AS fecha,
+              TIME_FORMAT(hora_entrada, '%H:%i') AS hora_entrada,
+              TIME_FORMAT(hora_salida, '%H:%i') AS hora_salida,
+              cliente, proyecto, tiempo_estimado, created_at
+       FROM registros_horas WHERE id = ?`,
+      [recordId]
+    );
+    if (!rows.length) {
+      return res.status(404).json({ message: "Registro de horas no encontrado" });
+    }
+    res.json(rows[0]);
+  } catch (error) {
+    console.error("Error actualizando registro de horas:", error.message);
+    res.status(500).json({ message: "No se pudo actualizar el registro de horas" });
+  }
+});
+
+app.delete("/api/admin/registros-horas/:id", verificarToken, exigirAdministrador, async (req, res) => {
+  const recordId = Number(req.params.id);
+  if (!Number.isSafeInteger(recordId) || recordId <= 0) {
+    return res.status(400).json({ message: "El ID del registro no es válido" });
+  }
+
+  try {
+    const [result] = await pool.query("DELETE FROM registros_horas WHERE id = ?", [recordId]);
+    if (!result.affectedRows) {
+      return res.status(404).json({ message: "Registro de horas no encontrado" });
+    }
+    res.json({ message: "Registro de horas eliminado correctamente" });
+  } catch (error) {
+    console.error("Error eliminando registro de horas:", error.message);
+    res.status(500).json({ message: "No se pudo eliminar el registro de horas" });
+  }
+});
+
 app.get("/api/admin/usuarios", verificarToken, exigirAdministrador, async (req, res) => {
   try {
     const [users] = await pool.query(
-      "SELECT id, username, role, created_at FROM admin_users ORDER BY created_at DESC"
+      "SELECT id, username, role, monthly_salary, created_at FROM admin_users ORDER BY created_at DESC"
     );
     res.json(users);
   } catch (error) {
@@ -673,18 +785,27 @@ app.post("/api/admin/usuarios", verificarToken, exigirAdministrador, async (req,
   const username = String(req.body.username || "").trim();
   const password = String(req.body.password || "");
   const role = String(req.body.role || "Suscriptor").trim();
+  const monthlySalary = Number(req.body.monthly_salary ?? 0);
 
-  if (username.length < 3 || password.length < 6 || !ROLES_ADMIN.has(role)) {
-    return res.status(400).json({ message: "Usuario, contraseña y rol no son válidos" });
+  if (
+    username.length < 3
+    || password.length < 6
+    || !ROLES_ADMIN.has(role)
+    || !Number.isFinite(monthlySalary)
+    || monthlySalary < 0
+    || monthlySalary > 9999999999.99
+  ) {
+    return res.status(400).json({ message: "Usuario, contraseña, rol o sueldo no son válidos" });
   }
 
   try {
+    const salary = Number(monthlySalary.toFixed(2));
     const passwordHash = await bcrypt.hash(password, 12);
     const [result] = await pool.query(
-      "INSERT INTO admin_users (username, password_hash, role) VALUES (?, ?, ?)",
-      [username, passwordHash, role]
+      "INSERT INTO admin_users (username, password_hash, role, monthly_salary) VALUES (?, ?, ?, ?)",
+      [username, passwordHash, role, salary]
     );
-    res.status(201).json({ id: result.insertId, username, role });
+    res.status(201).json({ id: result.insertId, username, role, monthly_salary: salary });
   } catch (error) {
     if (error.code === "ER_DUP_ENTRY") {
       return res.status(409).json({ message: "Ese usuario ya existe" });
@@ -694,16 +815,41 @@ app.post("/api/admin/usuarios", verificarToken, exigirAdministrador, async (req,
 });
 
 app.patch("/api/admin/usuarios/:id", verificarToken, exigirAdministrador, async (req, res) => {
-  const role = String(req.body.role || "").trim();
   const userId = Number(req.params.id);
-  if (!Number.isSafeInteger(userId) || !ROLES_ADMIN.has(role)) {
-    return res.status(400).json({ message: "Usuario o rol no válido" });
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const hasRole = Object.hasOwn(body, "role");
+  const hasSalary = Object.hasOwn(body, "monthly_salary");
+  const role = String(body.role || "").trim();
+  const monthlySalary = Number(body.monthly_salary);
+  if (
+    !Number.isSafeInteger(userId)
+    || userId <= 0
+    || (!hasRole && !hasSalary)
+    || (hasRole && !ROLES_ADMIN.has(role))
+    || (hasSalary && (
+      !Number.isFinite(monthlySalary)
+      || monthlySalary < 0
+      || monthlySalary > 9999999999.99
+    ))
+  ) {
+    return res.status(400).json({ message: "Usuario, rol o sueldo no válido" });
   }
 
   try {
+    const cambios = [];
+    const valores = [];
+    if (hasRole) {
+      cambios.push("role = ?");
+      valores.push(role);
+    }
+    if (hasSalary) {
+      cambios.push("monthly_salary = ?");
+      valores.push(Number(monthlySalary.toFixed(2)));
+    }
+    valores.push(userId);
     const [result] = await pool.query(
-      "UPDATE admin_users SET role = ? WHERE id = ?",
-      [role, userId]
+      `UPDATE admin_users SET ${cambios.join(", ")} WHERE id = ?`,
+      valores
     );
     if (!result.affectedRows) return res.status(404).json({ message: "Usuario no encontrado" });
     res.json({ message: "Rol actualizado correctamente" });
