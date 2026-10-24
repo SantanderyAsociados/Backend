@@ -6,6 +6,7 @@ const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const mysql = require("mysql2/promise");
+const { prepararRegistroHoras, calcularLiquidacion } = require("./hours");
 
 dotenv.config();
 
@@ -108,6 +109,8 @@ async function inicializarBaseDeDatos() {
       hora_salida TIME NOT NULL,
       cliente VARCHAR(180) NOT NULL,
       proyecto VARCHAR(180) NOT NULL,
+      numero_proyecto VARCHAR(80) NOT NULL DEFAULT 'N/A',
+      tipo VARCHAR(20) NOT NULL DEFAULT 'normal',
       tiempo_estimado DECIMAL(6, 2) NOT NULL DEFAULT 0.00,
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (id),
@@ -119,6 +122,8 @@ async function inicializarBaseDeDatos() {
   const columnasNuevas = [
     ["admin_users", "monthly_salary", "DECIMAL(12, 2) NOT NULL DEFAULT 0.00"],
     ["registros_horas", "tiempo_estimado", "DECIMAL(6, 2) NOT NULL DEFAULT 0.00"],
+    ["registros_horas", "numero_proyecto", "VARCHAR(80) NOT NULL DEFAULT 'N/A'"],
+    ["registros_horas", "tipo", "VARCHAR(20) NOT NULL DEFAULT 'normal'"],
   ];
   for (const [tabla, columna, definicion] of columnasNuevas) {
     const [columnas] = await pool.query(
@@ -435,7 +440,7 @@ app.get("/api/contenido/:tipo", validarTipoContenido, async (req, res) => {
 const PERMISOS_POR_ROL = {
   admin: ["contenido:leer", "contenido:crear", "contenido:editar", "contenido:publicar", "contenido:eliminar", "mensajes:leer", "mensajes:gestionar", "usuarios:gestionar", "horas:leer", "horas:crear"],
   Administrador: ["contenido:leer", "contenido:crear", "contenido:editar", "contenido:publicar", "contenido:eliminar", "mensajes:leer", "mensajes:gestionar", "usuarios:gestionar", "horas:leer", "horas:crear"],
-  Editor: ["horas:leer", "horas:crear"],
+  Editor: ["horas:crear"],
   Autor: ["contenido:leer", "contenido:crear", "contenido:editar", "mensajes:leer"],
   Colaborador: ["contenido:leer", "contenido:crear", "mensajes:leer"],
   Suscriptor: ["contenido:leer"],
@@ -601,28 +606,61 @@ function esFechaIsoValida(fecha) {
   return Number.isFinite(fechaUtc.getTime()) && fechaUtc.toISOString().slice(0, 10) === fecha;
 }
 
+function validarMesIso(mes) {
+  return !mes || /^\d{4}-(0[1-9]|1[0-2])$/.test(mes);
+}
+
+function serializarRegistroHoras(record) {
+  return {
+    ...record,
+    pago: calcularLiquidacion(
+      record.tiempo_estimado,
+      record.monthly_salary,
+      record.tipo,
+      record.fecha
+    ),
+  };
+}
+
 app.get("/api/admin/registros-horas", verificarToken, exigirPermiso("horas:leer"), async (req, res) => {
   if (req.query.fecha !== undefined && typeof req.query.fecha !== "string") {
     return res.status(400).json({ message: "La fecha de consulta no es válida" });
   }
+  if (req.query.mes !== undefined && typeof req.query.mes !== "string") {
+    return res.status(400).json({ message: "El mes de consulta no es válido" });
+  }
   const fecha = typeof req.query.fecha === "string" ? req.query.fecha.trim() : "";
+  const mes = typeof req.query.mes === "string" ? req.query.mes.trim() : "";
   const fechaValida = !fecha || esFechaIsoValida(fecha);
-  if (!fechaValida) {
+  if (!fechaValida || !validarMesIso(mes)) {
     return res.status(400).json({ message: "La fecha de consulta no es válida" });
   }
 
   try {
+    const filtros = [];
+    const valores = [];
+    if (fecha) {
+      filtros.push("rh.fecha = ?");
+      valores.push(fecha);
+    }
+    if (mes) {
+      filtros.push("rh.fecha >= ? AND rh.fecha < DATE_ADD(?, INTERVAL 1 MONTH)");
+      valores.push(`${mes}-01`, `${mes}-01`);
+    }
+    const where = filtros.length ? `WHERE ${filtros.join(" AND ")}` : "";
     const [rows] = await pool.query(
-      `SELECT id, user_id, username, DATE_FORMAT(fecha, '%Y-%m-%d') AS fecha,
-              TIME_FORMAT(hora_entrada, '%H:%i') AS hora_entrada,
-              TIME_FORMAT(hora_salida, '%H:%i') AS hora_salida,
-              cliente, proyecto, tiempo_estimado, created_at
-       FROM registros_horas
-       WHERE (? IS NULL OR fecha = ?)
-       ORDER BY fecha DESC, hora_entrada DESC, id DESC`,
-      [fecha || null, fecha || null]
+      `SELECT rh.id, rh.user_id, rh.username, DATE_FORMAT(rh.fecha, '%Y-%m-%d') AS fecha,
+              TIME_FORMAT(rh.hora_entrada, '%H:%i') AS hora_entrada,
+              TIME_FORMAT(rh.hora_salida, '%H:%i') AS hora_salida,
+              rh.cliente, rh.proyecto, rh.numero_proyecto, rh.tipo,
+              rh.tiempo_estimado, au.monthly_salary, rh.created_at
+       FROM registros_horas rh
+       LEFT JOIN admin_users au ON au.id = rh.user_id
+       ${where}
+       ORDER BY rh.fecha DESC, rh.hora_entrada DESC, rh.id DESC`,
+      valores
     );
-    res.json(rows);
+    res.json(rows.map(serializarRegistroHoras));
   } catch (error) {
     console.error("Error cargando registros de horas:", error.message);
     res.status(500).json({ message: "No se pudieron cargar los registros de horas" });
@@ -639,19 +677,41 @@ app.get("/api/admin/registros-horas/mios", verificarToken, (req, res, next) => {
   if (!Number.isSafeInteger(userId) || userId <= 0) {
     return res.status(400).json({ message: "Usuario no válido" });
   }
+  if (req.query.mes !== undefined && typeof req.query.mes !== "string") {
+    return res.status(400).json({ message: "El mes de consulta no es válido" });
+  }
+  const mes = typeof req.query.mes === "string" ? req.query.mes.trim() : "";
+  if (!validarMesIso(mes)) {
+    return res.status(400).json({ message: "El mes de consulta no es válido" });
+  }
 
   try {
+    const [[profile]] = await pool.query(
+      "SELECT monthly_salary FROM admin_users WHERE id = ?",
+      [userId]
+    );
+    if (!profile) return res.status(404).json({ message: "Usuario no encontrado" });
+
+    const valores = [userId];
+    const monthFilter = mes
+      ? "AND fecha >= ? AND fecha < DATE_ADD(?, INTERVAL 1 MONTH)"
+      : "";
+    if (mes) valores.push(`${mes}-01`, `${mes}-01`);
     const [rows] = await pool.query(
       `SELECT id, user_id, username, DATE_FORMAT(fecha, '%Y-%m-%d') AS fecha,
               TIME_FORMAT(hora_entrada, '%H:%i') AS hora_entrada,
               TIME_FORMAT(hora_salida, '%H:%i') AS hora_salida,
-              cliente, proyecto, tiempo_estimado, created_at
+              cliente, proyecto, numero_proyecto, tipo, tiempo_estimado,
+              ? AS monthly_salary, created_at
        FROM registros_horas
-       WHERE user_id = ?
+       WHERE user_id = ? ${monthFilter}
        ORDER BY fecha DESC, hora_entrada DESC, id DESC`,
-      [userId]
+      [Number(profile.monthly_salary), ...valores]
     );
-    res.json(rows);
+    res.json({
+      registros: rows.map(serializarRegistroHoras),
+      sueldo_mensual: Number(profile.monthly_salary),
+    });
   } catch (error) {
     console.error("Error cargando registros del usuario:", error.message);
     res.status(500).json({ message: "No se pudieron cargar tus registros de horas" });
@@ -660,121 +720,117 @@ app.get("/api/admin/registros-horas/mios", verificarToken, (req, res, next) => {
 
 app.post("/api/admin/registros-horas", verificarToken, exigirPermiso("horas:crear"), async (req, res) => {
   const body = req.body && typeof req.body === "object" ? req.body : {};
-  const fecha = typeof body.fecha === "string" ? body.fecha.trim() : "";
-  const horaEntrada = typeof body.hora_entrada === "string" ? body.hora_entrada.trim() : "";
-  const horaSalida = typeof body.hora_salida === "string" ? body.hora_salida.trim() : "";
-  const cliente = typeof body.cliente === "string" ? body.cliente.trim() : "";
-  const proyecto = typeof body.proyecto === "string" ? body.proyecto.trim() : "";
-  const tiempoEstimado = Number(body.tiempo_estimado);
-  const fechaPartes = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fecha);
-  const fechaValida = fechaPartes
-    && new Date(Date.UTC(Number(fechaPartes[1]), Number(fechaPartes[2]) - 1, Number(fechaPartes[3])))
-      .toISOString().slice(0, 10) === fecha;
-  const horaValida = (hora) => {
-    const partes = /^(\d{2}):(\d{2})$/.exec(hora);
-    return partes && Number(partes[1]) < 24 && Number(partes[2]) < 60;
-  };
+  const record = prepararRegistroHoras(body);
+  if (record.error) return res.status(400).json({ message: record.error });
 
-  if (
-    !fechaValida
-    || !horaValida(horaEntrada)
-    || !horaValida(horaSalida)
-    || horaSalida <= horaEntrada
-    || !cliente
-    || cliente.length > 180
-    || !proyecto
-    || proyecto.length > 180
-    || !Number.isFinite(tiempoEstimado)
-    || tiempoEstimado <= 0
-    || tiempoEstimado > 24
-  ) {
-    return res.status(400).json({
-      message: "Indica fecha, horas, cliente, proyecto y un tiempo estimado entre 0 y 24 horas.",
-    });
-  }
-
+  const userId = Number(req.admin.sub);
+  let connection;
   try {
-    const [result] = await pool.query(
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+    const [users] = await connection.query(
+      "SELECT id FROM admin_users WHERE id = ? FOR UPDATE",
+      [userId]
+    );
+    if (!users.length) {
+      await connection.rollback();
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+    const [[dailyTotal]] = await connection.query(
+      "SELECT COALESCE(SUM(tiempo_estimado), 0) AS total FROM registros_horas WHERE user_id = ? AND fecha = ?",
+      [userId, record.fecha]
+    );
+    if (Number(dailyTotal.total) + record.tiempo_estimado > 24) {
+      await connection.rollback();
+      return res.status(400).json({ message: "No es posible registrar más de 24 horas en un mismo día" });
+    }
+
+    const [result] = await connection.query(
       `INSERT INTO registros_horas
-       (user_id, username, fecha, hora_entrada, hora_salida, cliente, proyecto, tiempo_estimado)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+       (user_id, username, fecha, hora_entrada, hora_salida, cliente, proyecto,
+        numero_proyecto, tipo, tiempo_estimado)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        Number(req.admin.sub),
+        userId,
         String(req.admin.username),
-        fecha,
-        horaEntrada,
-        horaSalida,
-        cliente,
-        proyecto,
-        tiempoEstimado,
+        record.fecha,
+        record.hora_entrada,
+        record.hora_salida,
+        record.cliente,
+        record.proyecto,
+        record.numero_proyecto,
+        record.tipo,
+        record.tiempo_estimado,
       ]
     );
-    res.status(201).json({
-      id: result.insertId,
-      user_id: Number(req.admin.sub),
-      username: String(req.admin.username),
-      fecha,
-      hora_entrada: horaEntrada,
-      hora_salida: horaSalida,
-      cliente,
-      proyecto,
-      tiempo_estimado: tiempoEstimado,
-    });
+    const [[savedRecord]] = await connection.query(
+      `SELECT rh.id, rh.user_id, rh.username, DATE_FORMAT(rh.fecha, '%Y-%m-%d') AS fecha,
+              TIME_FORMAT(rh.hora_entrada, '%H:%i') AS hora_entrada,
+              TIME_FORMAT(rh.hora_salida, '%H:%i') AS hora_salida,
+              rh.cliente, rh.proyecto, rh.numero_proyecto, rh.tipo,
+              rh.tiempo_estimado, au.monthly_salary, rh.created_at
+       FROM registros_horas rh
+       LEFT JOIN admin_users au ON au.id = rh.user_id
+       WHERE rh.id = ?`,
+      [result.insertId]
+    );
+    await connection.commit();
+    res.status(201).json(serializarRegistroHoras(savedRecord));
   } catch (error) {
+    if (connection) await connection.rollback();
     console.error("Error guardando registro de horas:", error.message);
     res.status(500).json({ message: "No se pudo guardar el registro de horas" });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
 app.patch("/api/admin/registros-horas/:id", verificarToken, exigirAdministrador, async (req, res) => {
   const recordId = Number(req.params.id);
   const body = req.body && typeof req.body === "object" ? req.body : {};
-  const fecha = typeof body.fecha === "string" ? body.fecha.trim() : "";
-  const horaEntrada = typeof body.hora_entrada === "string" ? body.hora_entrada.trim() : "";
-  const horaSalida = typeof body.hora_salida === "string" ? body.hora_salida.trim() : "";
-  const cliente = typeof body.cliente === "string" ? body.cliente.trim() : "";
-  const proyecto = typeof body.proyecto === "string" ? body.proyecto.trim() : "";
-  const tiempoEstimado = Number(body.tiempo_estimado);
-  const fechaValida = esFechaIsoValida(fecha);
-  const horaValida = (hora) => /^([01]\d|2[0-3]):[0-5]\d$/.test(hora);
+  const record = prepararRegistroHoras(body);
 
   if (
     !Number.isSafeInteger(recordId)
     || recordId <= 0
-    || !fechaValida
-    || !horaValida(horaEntrada)
-    || !horaValida(horaSalida)
-    || horaSalida <= horaEntrada
-    || !cliente
-    || cliente.length > 180
-    || !proyecto
-    || proyecto.length > 180
-    || !Number.isFinite(tiempoEstimado)
-    || tiempoEstimado <= 0
-    || tiempoEstimado > 24
+    || record.error
   ) {
-    return res.status(400).json({ message: "Los datos del registro de horas no son válidos" });
+    return res.status(400).json({ message: record.error || "Los datos del registro de horas no son válidos" });
   }
 
   try {
     await pool.query(
       `UPDATE registros_horas
-       SET fecha = ?, hora_entrada = ?, hora_salida = ?, cliente = ?, proyecto = ?, tiempo_estimado = ?
+       SET fecha = ?, hora_entrada = ?, hora_salida = ?, cliente = ?, proyecto = ?,
+           numero_proyecto = ?, tipo = ?, tiempo_estimado = ?
        WHERE id = ?`,
-      [fecha, horaEntrada, horaSalida, cliente, proyecto, tiempoEstimado, recordId]
+      [
+        record.fecha,
+        record.hora_entrada,
+        record.hora_salida,
+        record.cliente,
+        record.proyecto,
+        record.numero_proyecto,
+        record.tipo,
+        record.tiempo_estimado,
+        recordId,
+      ]
     );
     const [rows] = await pool.query(
-      `SELECT id, user_id, username, DATE_FORMAT(fecha, '%Y-%m-%d') AS fecha,
-              TIME_FORMAT(hora_entrada, '%H:%i') AS hora_entrada,
-              TIME_FORMAT(hora_salida, '%H:%i') AS hora_salida,
-              cliente, proyecto, tiempo_estimado, created_at
-       FROM registros_horas WHERE id = ?`,
+      `SELECT rh.id, rh.user_id, rh.username, DATE_FORMAT(rh.fecha, '%Y-%m-%d') AS fecha,
+              TIME_FORMAT(rh.hora_entrada, '%H:%i') AS hora_entrada,
+              TIME_FORMAT(rh.hora_salida, '%H:%i') AS hora_salida,
+              rh.cliente, rh.proyecto, rh.numero_proyecto, rh.tipo,
+              rh.tiempo_estimado, au.monthly_salary, rh.created_at
+       FROM registros_horas rh
+       LEFT JOIN admin_users au ON au.id = rh.user_id
+       WHERE rh.id = ?`,
       [recordId]
     );
     if (!rows.length) {
       return res.status(404).json({ message: "Registro de horas no encontrado" });
     }
-    res.json(rows[0]);
+    res.json(serializarRegistroHoras(rows[0]));
   } catch (error) {
     console.error("Error actualizando registro de horas:", error.message);
     res.status(500).json({ message: "No se pudo actualizar el registro de horas" });

@@ -22,6 +22,8 @@ CREATE TABLE IF NOT EXISTS registros_horas (
   hora_salida TIME NOT NULL,
   cliente VARCHAR(180) NOT NULL,
   proyecto VARCHAR(180) NOT NULL,
+  numero_proyecto VARCHAR(80) NOT NULL DEFAULT 'N/A',
+  tipo VARCHAR(20) NOT NULL DEFAULT 'normal',
   tiempo_estimado DECIMAL(6, 2) NOT NULL DEFAULT 0.00,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
