@@ -435,7 +435,7 @@ app.get("/api/contenido/:tipo", validarTipoContenido, async (req, res) => {
 const PERMISOS_POR_ROL = {
   admin: ["contenido:leer", "contenido:crear", "contenido:editar", "contenido:publicar", "contenido:eliminar", "mensajes:leer", "mensajes:gestionar", "usuarios:gestionar", "horas:leer", "horas:crear"],
   Administrador: ["contenido:leer", "contenido:crear", "contenido:editar", "contenido:publicar", "contenido:eliminar", "mensajes:leer", "mensajes:gestionar", "usuarios:gestionar", "horas:leer", "horas:crear"],
-  Editor: ["horas:crear"],
+  Editor: ["horas:leer", "horas:crear"],
   Autor: ["contenido:leer", "contenido:crear", "contenido:editar", "mensajes:leer"],
   Colaborador: ["contenido:leer", "contenido:crear", "mensajes:leer"],
   Suscriptor: ["contenido:leer"],
@@ -626,6 +626,35 @@ app.get("/api/admin/registros-horas", verificarToken, exigirPermiso("horas:leer"
   } catch (error) {
     console.error("Error cargando registros de horas:", error.message);
     res.status(500).json({ message: "No se pudieron cargar los registros de horas" });
+  }
+});
+
+app.get("/api/admin/registros-horas/mios", verificarToken, (req, res, next) => {
+  if (tienePermiso(req, "horas:leer") || tienePermiso(req, "horas:crear")) {
+    return next();
+  }
+  return res.status(403).json({ message: "Tu rol no tiene permiso para esta acción" });
+}, async (req, res) => {
+  const userId = Number(req.admin.sub);
+  if (!Number.isSafeInteger(userId) || userId <= 0) {
+    return res.status(400).json({ message: "Usuario no válido" });
+  }
+
+  try {
+    const [rows] = await pool.query(
+      `SELECT id, user_id, username, DATE_FORMAT(fecha, '%Y-%m-%d') AS fecha,
+              TIME_FORMAT(hora_entrada, '%H:%i') AS hora_entrada,
+              TIME_FORMAT(hora_salida, '%H:%i') AS hora_salida,
+              cliente, proyecto, tiempo_estimado, created_at
+       FROM registros_horas
+       WHERE user_id = ?
+       ORDER BY fecha DESC, hora_entrada DESC, id DESC`,
+      [userId]
+    );
+    res.json(rows);
+  } catch (error) {
+    console.error("Error cargando registros del usuario:", error.message);
+    res.status(500).json({ message: "No se pudieron cargar tus registros de horas" });
   }
 });
 
