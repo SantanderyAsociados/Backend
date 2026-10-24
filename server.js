@@ -98,6 +98,23 @@ async function inicializarBaseDeDatos() {
   `);
 
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS registros_horas (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      user_id INT UNSIGNED NOT NULL,
+      username VARCHAR(80) NOT NULL,
+      fecha DATE NOT NULL,
+      hora_entrada TIME NOT NULL,
+      hora_salida TIME NOT NULL,
+      cliente VARCHAR(180) NOT NULL,
+      proyecto VARCHAR(180) NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      KEY registros_horas_usuario_fecha_index (user_id, fecha),
+      KEY registros_horas_fecha_index (fecha)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+  `);
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS mensajes (
       id BIGINT UNSIGNED NOT NULL,
       nombre VARCHAR(120) NOT NULL,
@@ -398,9 +415,9 @@ app.get("/api/contenido/:tipo", validarTipoContenido, async (req, res) => {
 });
 
 const PERMISOS_POR_ROL = {
-  admin: ["contenido:leer", "contenido:crear", "contenido:editar", "contenido:publicar", "contenido:eliminar", "mensajes:leer", "mensajes:gestionar", "usuarios:gestionar"],
-  Administrador: ["contenido:leer", "contenido:crear", "contenido:editar", "contenido:publicar", "contenido:eliminar", "mensajes:leer", "mensajes:gestionar", "usuarios:gestionar"],
-  Editor: ["contenido:leer", "contenido:crear", "contenido:editar", "contenido:publicar", "contenido:eliminar", "mensajes:leer", "mensajes:gestionar"],
+  admin: ["contenido:leer", "contenido:crear", "contenido:editar", "contenido:publicar", "contenido:eliminar", "mensajes:leer", "mensajes:gestionar", "usuarios:gestionar", "horas:leer", "horas:crear"],
+  Administrador: ["contenido:leer", "contenido:crear", "contenido:editar", "contenido:publicar", "contenido:eliminar", "mensajes:leer", "mensajes:gestionar", "usuarios:gestionar", "horas:leer", "horas:crear"],
+  Editor: ["horas:leer", "horas:crear"],
   Autor: ["contenido:leer", "contenido:crear", "contenido:editar", "mensajes:leer"],
   Colaborador: ["contenido:leer", "contenido:crear", "mensajes:leer"],
   Suscriptor: ["contenido:leer"],
@@ -550,11 +567,96 @@ const ROLES_ADMIN = new Set([
 ]);
 
 function exigirAdministrador(req, res, next) {
-  if (req.admin?.role !== "admin" && req.admin?.role !== "Administrador") {
+  if (!esAdministrador(req)) {
     return res.status(403).json({ message: "Solo un administrador puede gestionar usuarios" });
   }
   next();
 }
+
+function esAdministrador(req) {
+  return req.admin?.role === "admin" || req.admin?.role === "Administrador";
+}
+
+app.get("/api/admin/registros-horas", verificarToken, exigirPermiso("horas:leer"), async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT id, user_id, username, DATE_FORMAT(fecha, '%Y-%m-%d') AS fecha,
+              TIME_FORMAT(hora_entrada, '%H:%i') AS hora_entrada,
+              TIME_FORMAT(hora_salida, '%H:%i') AS hora_salida,
+              cliente, proyecto, created_at
+       FROM registros_horas
+       ${esAdministrador(req) ? "" : "WHERE user_id = ?"}
+       ORDER BY fecha DESC, hora_entrada DESC, id DESC`,
+      esAdministrador(req) ? [] : [Number(req.admin.sub)]
+    );
+    res.json(rows);
+  } catch (error) {
+    console.error("Error cargando registros de horas:", error.message);
+    res.status(500).json({ message: "No se pudieron cargar los registros de horas" });
+  }
+});
+
+app.post("/api/admin/registros-horas", verificarToken, exigirPermiso("horas:crear"), async (req, res) => {
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const fecha = typeof body.fecha === "string" ? body.fecha.trim() : "";
+  const horaEntrada = typeof body.hora_entrada === "string" ? body.hora_entrada.trim() : "";
+  const horaSalida = typeof body.hora_salida === "string" ? body.hora_salida.trim() : "";
+  const cliente = typeof body.cliente === "string" ? body.cliente.trim() : "";
+  const proyecto = typeof body.proyecto === "string" ? body.proyecto.trim() : "";
+  const fechaPartes = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fecha);
+  const fechaValida = fechaPartes
+    && new Date(Date.UTC(Number(fechaPartes[1]), Number(fechaPartes[2]) - 1, Number(fechaPartes[3])))
+      .toISOString().slice(0, 10) === fecha;
+  const horaValida = (hora) => {
+    const partes = /^(\d{2}):(\d{2})$/.exec(hora);
+    return partes && Number(partes[1]) < 24 && Number(partes[2]) < 60;
+  };
+
+  if (
+    !fechaValida
+    || !horaValida(horaEntrada)
+    || !horaValida(horaSalida)
+    || horaSalida <= horaEntrada
+    || !cliente
+    || cliente.length > 180
+    || !proyecto
+    || proyecto.length > 180
+  ) {
+    return res.status(400).json({
+      message: "Indica una fecha válida, horas correctas (la salida posterior a la entrada), cliente y proyecto.",
+    });
+  }
+
+  try {
+    const [result] = await pool.query(
+      `INSERT INTO registros_horas
+       (user_id, username, fecha, hora_entrada, hora_salida, cliente, proyecto)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        Number(req.admin.sub),
+        String(req.admin.username),
+        fecha,
+        horaEntrada,
+        horaSalida,
+        cliente,
+        proyecto,
+      ]
+    );
+    res.status(201).json({
+      id: result.insertId,
+      user_id: Number(req.admin.sub),
+      username: String(req.admin.username),
+      fecha,
+      hora_entrada: horaEntrada,
+      hora_salida: horaSalida,
+      cliente,
+      proyecto,
+    });
+  } catch (error) {
+    console.error("Error guardando registro de horas:", error.message);
+    res.status(500).json({ message: "No se pudo guardar el registro de horas" });
+  }
+});
 
 app.get("/api/admin/usuarios", verificarToken, exigirAdministrador, async (req, res) => {
   try {

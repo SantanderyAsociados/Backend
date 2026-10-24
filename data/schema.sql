@@ -12,6 +12,21 @@ CREATE TABLE IF NOT EXISTS admin_users (
   UNIQUE KEY admin_users_username_unique (username)
 );
 
+CREATE TABLE IF NOT EXISTS registros_horas (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id INT UNSIGNED NOT NULL,
+  username VARCHAR(80) NOT NULL,
+  fecha DATE NOT NULL,
+  hora_entrada TIME NOT NULL,
+  hora_salida TIME NOT NULL,
+  cliente VARCHAR(180) NOT NULL,
+  proyecto VARCHAR(180) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY registros_horas_usuario_fecha_index (user_id, fecha),
+  KEY registros_horas_fecha_index (fecha)
+);
+
 CREATE TABLE IF NOT EXISTS mensajes (
   id BIGINT UNSIGNED NOT NULL,
   nombre VARCHAR(120) NOT NULL,
